@@ -3,6 +3,7 @@
 #include <thread>
 #include <chrono>
 #include <ncurses.h>
+#include <vector>
 
 int nScreenWidth = 120;
 int nScreenHeight = 30;
@@ -12,6 +13,20 @@ struct sSnakeSegment
     int x;
     int y;
 };
+
+void drawBarriers(wchar_t *screen) {
+    // Define barrier positions
+    std::vector<std::pair<int, int>> barriers = {
+        {20, 5}, {20, 6}, {20, 7}, {20, 8}, {20, 9},
+        {40, 10}, {41, 10}, {42, 10}, {43, 10}, {44, 10},
+        {60, 15}, {61, 15}, {62, 15}, {63, 15}, {64, 15},
+        {80, 20}, {80, 21}, {80, 22}, {80, 23}, {80, 24}
+    };
+
+    for (const auto& barrier : barriers) {
+        screen[barrier.second * nScreenWidth + barrier.first] = L'#'; // Use '#' for barriers
+    }
+}
 
 int main()
 {
@@ -61,20 +76,19 @@ int main()
                         break;
                 }
 
-
                 switch (nSnakeDirection)
                 {
                 case 0: 
                     snake.push_front({snake.front().x, snake.front().y - 1});
                     break;
                 case 1: 
-                snake.push_front({snake.front().x + 1, snake.front().y });
+                    snake.push_front({snake.front().x + 1, snake.front().y });
                     break;
                 case 2: 
-                snake.push_front({snake.front().x, snake.front().y + 1});
+                    snake.push_front({snake.front().x, snake.front().y + 1});
                     break;
                 case 3: 
-                snake.push_front({snake.front().x - 1, snake.front().y});
+                    snake.push_front({snake.front().x - 1, snake.front().y});
                     break;
                 default:
                     break;
@@ -95,74 +109,17 @@ int main()
                     }
                 }
             
-                if (snake.front().x < 0 || snake.front().x >= nScreenWidth)
+                if (snake.front().x < 0 || snake.front().x >= nScreenWidth ||
+                    snake.front().y < 3 || snake.front().y >= nScreenHeight)
                 {
                     bDead = true;
                 }
-                if (snake.front().y < 3 || snake.front().y >= nScreenHeight)
-                {
-                    bDead = true;
-                }
 
-                for (std::list<sSnakeSegment>::iterator i = snake.begin(); i != snake.end(); i++)
-                {
-                    if (i != snake.begin() && i->x == snake.front().x && i->y == snake.front().y)
-                    {
-                        bDead = true;
-                    }
-                }
-
-                snake.pop_back();
-
-                for (int i = 0; i < nScreenWidth * nScreenHeight; i++)
-                {
-                    screen[i] = L' ';
-                }
-
-                for (int i = 0; i < nScreenWidth; i++)
-                {
-                    screen[i] = L'=';
-                    screen[2 * nScreenWidth + i] = L'=';
-                }
-
-                std::string scoreStr = "Snake Game   SCORE: " + std::to_string(nScore);
-                for (size_t i = 0; i < scoreStr.size(); i++)
-                {
-                    screen[1 * nScreenWidth + 5 + i] = scoreStr[i];
-                }
-
-                for(auto s : snake){
-                    screen[s.y * nScreenWidth + s.x] = bDead ? L'+' : L'@';
-                }
-                
-                screen[snake.front().y * nScreenWidth + snake.front().x] = bDead ? L'X' : L'@';
-
-                screen[nFoodY * nScreenWidth + nFoodX] = L'%';
-
-                if (bDead)
-                {
-                    std::string gameOverStr = "PRESS 'SPACE' TO PLAY AGAIN";
-                    for (size_t i = 0; i < gameOverStr.size(); i++)
-                    {
-                        screen[(nScreenHeight / 2) * nScreenWidth + (nScreenWidth - gameOverStr.size()) / 2 + i] = gameOverStr[i];
-                    }
-                }
-
-                for (int y = 0; y < nScreenHeight; y++)
-                {
-                    for (int x = 0; x < nScreenWidth; x++)
-                    {
-                        mvaddch(y, x, screen[y * nScreenWidth + x]);
-                    }
-                }
-            
-                refresh();
-            }
-        }
-
-        while (getch() != ' ');
-    }
-
-    endwin();
-    return 0;
-}
+                // Check for collision with barriers
+                std::vector<std::pair<int, int>> barriers = {
+                    {20, 5}, {20, 6}, {20, 7}, {20, 8}, {20, 9},
+        {40, 10}, {41, 10}, {42, 10}, {43, 10}, {44, 10},
+        {60, 15}, {61, 15}, {62, 15}, {63, 15}, {64, 15},
+        {80, 20}, {80, 21}, {80, 22}, {80, 23}, {80, 24}
+    };
+};
