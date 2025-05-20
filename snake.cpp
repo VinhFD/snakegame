@@ -47,8 +47,8 @@ int selectLevel() {
 // Function to handle the game logic
 void gameLoop(int level) {
     // Set initial speed based on the selected level
-    int initialSpeed = (level == 1) ? 200 : (level == 2) ? 100 : 40; // Speed in milliseconds
-    int speedIncrease = (level == 1) ? 20 : (level == 2) ? 15 : 10; // Speed increase per score
+    int initialSpeed = (level == 1) ? 200 : (level == 2) ? 100 : 50; // Speed in milliseconds
+    int verticalSpeed = initialSpeed * 2; // Half of the horizontal speed
 
     // Create a screen buffer to represent the game area
     wchar_t *screen = new wchar_t[nScreenWidth * nScreenHeight];
@@ -82,7 +82,6 @@ void gameLoop(int level) {
 
     while (!bDead) { // Game loop continues until the snake is dead
         auto t1 = std::chrono::system_clock::now(); // Start timing for movement
-        timeout(initialSpeed); // Set timeout based on the current speed
 
         // Handle user input for snake movement
         while ((std::chrono::system_clock::now() - t1) < std::chrono::milliseconds(initialSpeed)) {
@@ -107,17 +106,29 @@ void gameLoop(int level) {
 
             // Move the snake based on the current direction
             switch (nSnakeDirection) {
-                case 0: snake.push_front({snake.front().x, snake.front().y - 1}); break; // Move up
-                case 1: snake.push_front({snake.front().x + 1, snake.front().y}); break; // Move right
-                case 2: snake.push_front({snake.front().x, snake.front().y + 1}); break; // Move down
-                case 3: snake.push_front({snake.front().x - 1, snake.front().y}); break; // Move left
+                case 0: // Move up
+                    snake.push_front({snake.front().x, snake.front().y - 1});
+                    timeout(verticalSpeed); // Set timeout for vertical movement
+                    break;
+                case 1: // Move right
+                    snake.push_front({snake.front().x + 1, snake.front().y});
+                    timeout(initialSpeed); // Set timeout for horizontal movement
+                    break;
+                case 2: // Move down
+                    snake.push_front({snake.front().x, snake.front().y + 1});
+                    timeout(verticalSpeed); // Set timeout for vertical movement
+                    break;
+                case 3: // Move left
+                    snake.push_front({snake.front().x - 1, snake.front().y});
+                    timeout(initialSpeed); // Set timeout for horizontal movement
+                    break;
                 default: break;
             }
 
             // Check for food collision
             if (snake.front().x == nFoodX && snake.front().y == nFoodY) {
                 nScore++; // Increase score
-                initialSpeed = std::max(10, initialSpeed - speedIncrease); // Decrease speed but not below 10ms
+                initialSpeed = std::max(10, initialSpeed - (level == 1 ? 20 : (level == 2 ? 15 : 10))); // Decrease speed but not below 10ms
                 timeout(initialSpeed); // Update timeout based on new speed
                 // Randomly place food in an empty space
                 while (screen[nFoodY * nScreenWidth + nFoodX] != ' ') {
@@ -130,8 +141,16 @@ void gameLoop(int level) {
             }
 
             // Check for wall collision
-            if (snake.front().x < 0 || snake.front().x >= nScreenWidth || snake.front().y < 3 || snake.front().y >= nScreenHeight) {
-                bDead = true; // Snake hits the wall
+            if (snake.front().x < 0) {
+                snake.front().x = nScreenWidth - 1; // Wrap to the right side
+            } else if (snake.front().x >= nScreenWidth) {
+                snake.front().x = 0; // Wrap to the left side
+            }
+
+            if (snake.front().y < 3) {
+                snake.front().y = nScreenHeight - 1; // Wrap to the bottom
+            } else if (snake.front().y >= nScreenHeight) {
+                snake.front().y = 3; // Wrap to the top
             }
 
             // Check for self-collision
@@ -181,7 +200,7 @@ void gameLoop(int level) {
             refresh(); // Refresh the screen to show updates
         }
         if(bDead){
-        // Game over logic
+            // Game over logic
             std::string gameOverStr = "PRESS 'SPACE' TO PLAY AGAIN"; // Message to restart the game
             for (size_t i = 0; i < gameOverStr.size(); i++) {
                 screen[(nScreenHeight / 2) * nScreenWidth + (nScreenWidth - gameOverStr.size()) / 2 + i] = gameOverStr[i]; // Center the message
