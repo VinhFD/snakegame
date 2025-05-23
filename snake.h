@@ -15,9 +15,13 @@ struct sSnakeSegment {
     int y; // Y coordinate
 };
 
-// Structure to represent an obstacle
+// Structure for obstacles
 struct sObstacle {
-    std::vector<sSnakeSegment> segments; // Vector of segments that make up the obstacle
+    std::vector<sSnakeSegment> segments;
+    bool isMoving = false;      // Whether the obstacle moves
+    int moveDirection = 0;      // 0: up, 1: right, 2: down, 3: left
+    int moveSpeed = 1;          // Speed of movement
+    int moveCounter = 0;        // Counter for movement delay
 };
 
 // Game initialization
@@ -30,6 +34,7 @@ void showRecords();
 
 // Obstacle functions
 std::vector<sObstacle> generateObstacles(int numObstacles);
+void updateObstacles(std::vector<sObstacle>& obstacles);
 
 // Score functions
 int getHighScore(int level);
