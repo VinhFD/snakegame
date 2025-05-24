@@ -2,9 +2,9 @@ CXX = g++
 CXXFLAGS = -Wall -std=c++11
 LDFLAGS = -lncurses
 
+SRCS = main.cpp snake.cpp obstacles.cpp menu.cpp scores.cpp
+OBJS = $(SRCS:.cpp=.o)3
 TARGET = snake
-SRCS = snake.cpp
-OBJS = $(SRCS:.cpp=.o)
 
 all: $(TARGET)
 
